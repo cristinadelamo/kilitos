@@ -358,10 +358,10 @@ main { max-width: 680px; margin: 0 auto; padding: 14px 12px 40px; }
   .add-form { grid-template-columns: 130px 1fr 100px 80px; }
   .add-form .food-search { grid-column: auto; }
   #exForm input[type="text"] { grid-column: auto; }
-  #exForm { grid-template-columns: 1fr 90px 110px 110px; }
+  #exForm { grid-template-columns: 1fr 80px 100px 70px 110px; }
 }
 
-#mealQty { text-align: center; }
+#mealQty, #exQty { text-align: center; }
 
 .tip-group { margin-bottom: 6px; }
 .tip-group h3 {

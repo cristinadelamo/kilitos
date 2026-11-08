@@ -577,6 +577,11 @@ function renderExercise(d) {
       small.textContent = " · " + e.minutes + " min";
       txt.appendChild(small);
     }
+    if (e.qty && e.qty !== 1) {
+      const small = document.createElement("small");
+      small.textContent = " ×" + fmtQty(e.qty);
+      txt.appendChild(small);
+    }
     const kcal = document.createElement("span");
     kcal.className = "kcal";
     kcal.textContent = "-" + e.calories + " kcal";
@@ -738,7 +743,7 @@ function buildHistDetail(box, d) {
       li.className = "entry ex";
       const txt = document.createElement("span");
       txt.className = "txt";
-      txt.textContent = e.name + (e.minutes ? " · " + e.minutes + " min" : "");
+      txt.textContent = e.name + (e.minutes ? " · " + e.minutes + " min" : "") + (e.qty && e.qty !== 1 ? " ×" + fmtQty(e.qty) : "");
       const kcal = document.createElement("span");
       kcal.className = "kcal";
       kcal.textContent = "-" + e.calories + " kcal";
@@ -1116,6 +1121,18 @@ function updateMealPreview() {
   btn.textContent = total === null ? "Añadir" : "Añadir · " + total + " kcal";
 }
 
+function updateExPreview() {
+  const name = document.getElementById("exName");
+  const cal = document.getElementById("exCal");
+  const qty = document.getElementById("exQty");
+  const btn = document.getElementById("exAddBtn");
+  const c = parseFloat(cal.value);
+  const total = name.value.trim() && !isNaN(c) && c >= 0
+    ? Math.round(c * parseQty(qty.value))
+    : null;
+  btn.textContent = total === null ? "Añadir" : "Añadir · " + total + " kcal";
+}
+
 const EX_PRESETS = [
   { icon: "🏃", name: "Correr (por km)", min: null, k: 62 },
   { icon: "🤸", name: "Cuerpos Serranos 15 min", min: 15, k: 70 },
@@ -1256,23 +1273,32 @@ function init() {
     toast(isNew ? "Apuntado · añadido a mis alimentos" : "Comida apuntada");
   });
 
+  ["exName", "exCal", "exQty"].forEach(id =>
+    document.getElementById(id).addEventListener("input", updateExPreview));
+
   document.getElementById("exForm").addEventListener("submit", e => {
     e.preventDefault();
     const name = document.getElementById("exName");
     const min = document.getElementById("exMin");
     const cal = document.getElementById("exCal");
+    const qtyEl = document.getElementById("exQty");
     const c = parseInt(cal.value, 10);
     if (!name.value.trim() || isNaN(c) || c < 0) return;
     const m = parseInt(min.value, 10);
-    day(state.currentDate).exercise.push({
+    const qty = parseQty(qtyEl.value);
+    const entry = {
       name: name.value.trim(),
       minutes: isNaN(m) ? null : m,
-      calories: c
-    });
+      calories: Math.max(0, Math.round(c * qty))
+    };
+    if (qty !== 1) entry.qty = qty;
+    day(state.currentDate).exercise.push(entry);
     save();
     name.value = "";
     min.value = "";
     cal.value = "";
+    qtyEl.value = "";
+    updateExPreview();
     renderDiario();
     toast("Ejercicio apuntado");
   });
