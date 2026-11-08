@@ -116,8 +116,20 @@ function b64decode(b64) {
   return new TextDecoder().decode(bytes);
 }
 
+function normSyncCfg(cfg) {
+  let repo = (cfg.repo || "").trim().replace(/^https:\/\/github\.com\//i, "").replace(/\.git$/i, "").replace(/^\/+|\/+$/g, "");
+  if (repo.includes("/")) {
+    const parts = repo.split("/");
+    cfg.user = cfg.user || parts[0];
+    repo = parts[parts.length - 1];
+  }
+  cfg.repo = repo;
+  cfg.user = (cfg.user || "").trim();
+  return cfg;
+}
+
 async function ghRequest(path, options) {
-  const cfg = loadSyncCfg();
+  const cfg = normSyncCfg(loadSyncCfg());
   if (!cfg.user || !cfg.repo || !cfg.token) throw new Error("configura usuario, repo y token");
   const res = await fetch("https://api.github.com" + path, Object.assign({
     headers: {
@@ -126,10 +138,17 @@ async function ghRequest(path, options) {
       "Content-Type": "application/json"
     }
   }, options || {}));
-  if (res.status === 401 || res.status === 403) throw new Error("acceso denegado, revisa el token y sus permisos");
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error("GitHub respondió " + res.status);
-  return res.status === 204 ? null : res.json();
+  let body = null;
+  try { body = await res.json(); } catch (e) { body = null; }
+  if (res.status === 401 || res.status === 403) {
+    throw new Error("acceso denegado (" + res.status + "): " + (body && body.message ? body.message : "revisa el token y sus permisos"));
+  }
+  if (res.status === 404) {
+    if (options && options.method) throw new Error("repo no encontrado (" + cfg.user + "/" + cfg.repo + "): revisa el nombre y que el token tenga acceso a él");
+    return null;
+  }
+  if (!res.ok) throw new Error("GitHub respondió " + res.status + (body && body.message ? ": " + body.message : ""));
+  return body;
 }
 
 async function syncGetRemote() {
