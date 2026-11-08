@@ -192,7 +192,17 @@ function markSynced() {
   renderSyncCard();
 }
 
+function readSyncForm() {
+  const cfg = loadSyncCfg();
+  cfg.user = (document.getElementById("syncUser").value || "").trim();
+  cfg.repo = (document.getElementById("syncRepo").value || "").trim();
+  cfg.token = (document.getElementById("syncToken").value || "").trim();
+  saveSyncCfg(cfg);
+  return cfg;
+}
+
 async function doSync() {
+  readSyncForm();
   const btn = document.getElementById("syncBtn");
   btn.disabled = true;
   try {
@@ -217,6 +227,7 @@ async function doSync() {
 }
 
 async function doDownload() {
+  readSyncForm();
   const btn = document.getElementById("syncDownBtn");
   btn.disabled = true;
   try {
