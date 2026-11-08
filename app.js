@@ -130,7 +130,11 @@ function normSyncCfg(cfg) {
 
 async function ghRequest(path, options) {
   const cfg = normSyncCfg(loadSyncCfg());
-  if (!cfg.user || !cfg.repo || !cfg.token) throw new Error("configura usuario, repo y token");
+  const missing = [];
+  if (!cfg.user) missing.push("usuario");
+  if (!cfg.repo) missing.push("repo");
+  if (!cfg.token) missing.push("token");
+  if (missing.length) throw new Error("falta por rellenar: " + missing.join(", "));
   const res = await fetch("https://api.github.com" + path, Object.assign({
     headers: {
       "Authorization": "Bearer " + cfg.token,
