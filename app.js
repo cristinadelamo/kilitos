@@ -241,6 +241,8 @@ function scheduleAutoPush() {
 }
 
 function readSyncForm() {
+  const panel = document.getElementById("perfil");
+  if (!panel || !panel.classList.contains("active")) return normSyncCfg(loadSyncCfg());
   const cfg = loadSyncCfg();
   cfg.user = (document.getElementById("syncUser").value || "").trim();
   cfg.repo = (document.getElementById("syncRepo").value || "").trim();
@@ -1164,6 +1166,7 @@ function init() {
 
   initSuggest();
   renderExQuick();
+  renderSyncCard();
 
   document.querySelectorAll(".tab").forEach(t =>
     t.addEventListener("click", () => switchTab(t.dataset.tab)));
@@ -1367,7 +1370,7 @@ function init() {
   document.getElementById("foodSearch").addEventListener("input", e => renderFoods(e.target.value));
 
   document.getElementById("exportBtn").addEventListener("click", () => {
-    const blob = new Blob([JSON.stringify({ version: 1, profile: state.profile, days: state.days, myFoods: loadMyFoods(), foodOv: loadOverrides() }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ version: 1, profile: state.profile, days: state.days, myFoods: loadMyFoods(), foodOv: loadOverrides(), sync: loadSyncCfg() }, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "kilitos-copia-" + todayStr() + ".json";
@@ -1402,6 +1405,13 @@ function init() {
         state.days = data.days;
         if (Array.isArray(data.myFoods)) saveMyFoods(data.myFoods);
         if (data.foodOv && typeof data.foodOv === "object") saveOverrides(data.foodOv);
+        if (data.sync && typeof data.sync === "object") {
+          const cfg = loadSyncCfg();
+          if (data.sync.user) cfg.user = String(data.sync.user);
+          if (data.sync.repo) cfg.repo = String(data.sync.repo);
+          if (data.sync.token) cfg.token = String(data.sync.token);
+          saveSyncCfg(cfg);
+        }
         save();
         renderDiario();
         renderPerfil();
