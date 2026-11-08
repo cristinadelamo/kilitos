@@ -44,6 +44,7 @@ function load() {
 function save() {
   state.updatedAt = Date.now();
   localStorage.setItem(STORE_KEY, JSON.stringify({ version: 1, profile: state.profile, days: state.days, updatedAt: state.updatedAt }));
+  scheduleAutoPush();
 }
 
 const MYFOODS_KEY = "kilitos-myFoods";
@@ -194,6 +195,49 @@ function markSynced() {
   cfg.lastSync = Date.now();
   saveSyncCfg(cfg);
   renderSyncCard();
+  setSyncIcon("idle");
+}
+
+function syncConfigured() {
+  const cfg = normSyncCfg(loadSyncCfg());
+  return !!(cfg.user && cfg.repo && cfg.token);
+}
+
+function setSyncIcon(state) {
+  const el = document.getElementById("syncIcon");
+  if (!el) return;
+  el.classList.remove("busy", "error", "pending");
+  if (state !== "idle") el.classList.add(state);
+}
+
+let syncing = false;
+
+async function autoSync() {
+  if (!syncConfigured() || syncing) return;
+  syncing = true;
+  setSyncIcon("busy");
+  try {
+    const remote = await syncGetRemote();
+    if (remote && (remote.data.updatedAt || 0) > (state.updatedAt || 0)) {
+      applyRemoteData(remote.data);
+      markSynced();
+      toast("Datos actualizados desde la nube ☁️");
+    } else if (!remote || (remote.data.updatedAt || 0) < (state.updatedAt || 0)) {
+      await syncPush(remote ? remote.sha : null);
+      markSynced();
+    } else {
+      setSyncIcon("idle");
+    }
+  } catch (e) {
+    setSyncIcon("error");
+  }
+  syncing = false;
+}
+
+function scheduleAutoPush() {
+  if (!syncConfigured()) return;
+  clearTimeout(scheduleAutoPush._t);
+  scheduleAutoPush._t = setTimeout(autoSync, 15000);
 }
 
 function readSyncForm() {
@@ -225,6 +269,7 @@ async function doSync() {
     }
     markSynced();
   } catch (e) {
+    setSyncIcon("error");
     toast("Sincronización: " + e.message);
   }
   btn.disabled = false;
@@ -244,6 +289,7 @@ async function doDownload() {
       toast("Datos descargados ☁️⬇️");
     }
   } catch (e) {
+    setSyncIcon("error");
     toast("Descarga: " + e.message);
   }
   btn.disabled = false;
@@ -1104,6 +1150,25 @@ function init() {
 
   document.querySelectorAll(".tab").forEach(t =>
     t.addEventListener("click", () => switchTab(t.dataset.tab)));
+
+  document.getElementById("syncIcon").addEventListener("click", () => {
+    if (!syncConfigured()) {
+      switchTab("perfil");
+      toast("Configura la sincronización en Perfil");
+      return;
+    }
+    doSync();
+  });
+
+  if (syncConfigured()) {
+    const cfg = loadSyncCfg();
+    if (!cfg.lastSync || cfg.lastSync < (state.updatedAt || 0)) setSyncIcon("pending");
+    setTimeout(autoSync, 2000);
+    setInterval(() => { if (!document.hidden) autoSync(); }, 5 * 60 * 1000);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) autoSync();
+    });
+  }
 
   const dateInput = document.getElementById("dayDate");
   dateInput.max = todayStr();

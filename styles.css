@@ -45,6 +45,27 @@ body {
 .brand h1 { margin: 0; font-size: 1.25rem; letter-spacing: .3px; }
 .logo { width: 26px; height: 26px; }
 
+.sync-icon {
+  margin-left: auto;
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: rgba(255,255,255,.14);
+  color: #fff;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+.sync-icon svg { width: 20px; height: 20px; }
+.sync-icon:active { transform: scale(.94); }
+.sync-icon.busy svg { animation: syncPulse 1s infinite; }
+.sync-icon.pending { background: rgba(217,119,6,.55); }
+.sync-icon.error { background: rgba(220,38,38,.65); }
+@keyframes syncPulse { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+
 .tabs { display: flex; gap: 4px; margin-top: 8px; }
 .tab {
   flex: 1;

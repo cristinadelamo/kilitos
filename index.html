@@ -15,6 +15,9 @@
     <div class="brand">
       <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a4 4 0 0 0-4 4v.5a3.5 3.5 0 0 0 .5 6.8V16a3.5 3.5 0 0 0 7 0v-1.7a3.5 3.5 0 0 0 .5-6.8V7a4 4 0 0 0-4-4z"/><path d="M12 9v7"/></svg>
       <h1>Kilitos</h1>
+      <button id="syncIcon" class="sync-icon" aria-label="Sincronizar ahora" title="Sincronizar ahora">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+      </button>
     </div>
     <nav class="tabs">
       <button class="tab active" data-tab="diario">Diario</button>
@@ -223,7 +226,7 @@
 
     <div class="card">
       <h2>☁️ Sincronización</h2>
-      <p class="hint">Guarda tus datos en un repo privado de GitHub y úsalo en móvil y ordenador. El token se queda solo en este dispositivo. Sincroniza al empezar y al terminar de registrar.</p>
+      <p class="hint">Guarda tus datos en un repo privado de GitHub y úsalo en móvil y ordenador. El token se queda solo en este dispositivo. La app sincroniza sola al abrirla, tras cada cambio y cada pocos minutos; el icono ☁️ de arriba fuerza una sincronización manual.</p>
       <div class="sync-form">
         <label>Usuario de GitHub
           <input type="text" id="syncUser" placeholder="usuario" autocomplete="off" maxlength="60">
