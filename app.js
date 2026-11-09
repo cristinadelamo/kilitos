@@ -36,15 +36,35 @@ function load() {
     if (data.profile) Object.assign(state.profile, data.profile);
     if (data.days) state.days = data.days;
     state.updatedAt = typeof data.updatedAt === "number" ? data.updatedAt : 0;
+    state.dirty = data.dirty === true;
   } catch (e) {
     toast("No se pudieron cargar los datos guardados");
   }
 }
 
+function persistState() {
+  localStorage.setItem(STORE_KEY, JSON.stringify({
+    version: 1, profile: state.profile, days: state.days,
+    updatedAt: state.updatedAt, dirty: state.dirty === true
+  }));
+}
+
 function save() {
   state.updatedAt = Date.now();
-  localStorage.setItem(STORE_KEY, JSON.stringify({ version: 1, profile: state.profile, days: state.days, updatedAt: state.updatedAt }));
+  state.dirty = true;
+  persistState();
   scheduleAutoPush();
+}
+
+function markClean() {
+  state.dirty = false;
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+    if (raw && typeof raw === "object") {
+      delete raw.dirty;
+      localStorage.setItem(STORE_KEY, JSON.stringify(raw));
+    }
+  } catch (e) {}
 }
 
 const MYFOODS_KEY = "kilitos-myFoods";
@@ -174,6 +194,23 @@ async function syncPush(sha) {
     method: "PUT",
     body: JSON.stringify(body)
   });
+  markClean();
+}
+
+function hasLocalData() {
+  const p = state.profile;
+  if (p.startWeight != null || p.targetWeight != null || p.height != null || p.age != null ||
+    p.sex || p.calorieGoal != null || (p.waterGoal != null && p.waterGoal !== 8)) return true;
+  if (loadMyFoods().length) return true;
+  return sortedDays().some(s => hasDayData(state.days[s]));
+}
+
+function remoteHasData(d) {
+  if (!d) return false;
+  if (d.days && Object.keys(d.days).length) return true;
+  const p = d.profile || {};
+  return p.startWeight != null || p.targetWeight != null || p.height != null ||
+    p.age != null || p.sex || p.calorieGoal != null;
 }
 
 function applyRemoteData(data) {
@@ -182,7 +219,34 @@ function applyRemoteData(data) {
   if (Array.isArray(data.myFoods)) saveMyFoods(data.myFoods);
   if (data.foodOv && typeof data.foodOv === "object") saveOverrides(data.foodOv);
   state.updatedAt = data.updatedAt || Date.now();
-  localStorage.setItem(STORE_KEY, JSON.stringify({ version: 1, profile: state.profile, days: state.days, updatedAt: state.updatedAt }));
+  state.dirty = false;
+  persistState();
+  renderDiario();
+}
+
+function mergeRemoteData(data) {
+  const p = data.profile || {};
+  for (const k of Object.keys(p)) {
+    if (state.profile[k] == null || state.profile[k] === "") state.profile[k] = p[k];
+  }
+  const days = {};
+  for (const s of Object.keys(data.days || {})) days[s] = data.days[s];
+  for (const s of Object.keys(state.days)) {
+    if (state.dirty && days[s]) days[s] = state.days[s];
+    else if (!(s in days)) days[s] = state.days[s];
+  }
+  state.days = days;
+  const mine = loadMyFoods();
+  const byKey = {};
+  for (const f of (Array.isArray(data.myFoods) ? data.myFoods : []).concat(mine)) {
+    byKey[normText(f.n)] = byKey[normText(f.n)] || f;
+  }
+  saveMyFoods(Object.values(byKey));
+  if (data.foodOv && typeof data.foodOv === "object") {
+    saveOverrides(Object.assign({}, data.foodOv, loadOverrides()));
+  }
+  state.updatedAt = Date.now();
+  persistState();
   renderDiario();
 }
 
@@ -211,6 +275,15 @@ function setSyncIcon(state) {
 }
 
 let syncing = false;
+let retryTimer = null;
+
+function scheduleRetry() {
+  if (retryTimer) return;
+  retryTimer = setTimeout(() => {
+    retryTimer = null;
+    autoSync();
+  }, 30000);
+}
 
 async function autoSync() {
   if (!syncConfigured() || syncing) return;
@@ -218,18 +291,35 @@ async function autoSync() {
   setSyncIcon("busy");
   try {
     const remote = await syncGetRemote();
-    if (remote && (remote.data.updatedAt || 0) > (state.updatedAt || 0)) {
+    const ru = remote ? (remote.data.updatedAt || 0) : 0;
+    if (remote && ru > (state.updatedAt || 0)) {
+      if (state.dirty) {
+        mergeRemoteData(remote.data);
+        await syncPush(remote.sha);
+        toast("Cambios combinados con la nube ☁️");
+      } else {
+        applyRemoteData(remote.data);
+        toast("Datos actualizados desde la nube ☁️");
+      }
+      markSynced();
+      clearTimeout(retryTimer); retryTimer = null;
+    } else if (remote && remoteHasData(remote.data) && !hasLocalData()) {
       applyRemoteData(remote.data);
       markSynced();
-      toast("Datos actualizados desde la nube ☁️");
-    } else if (!remote || (remote.data.updatedAt || 0) < (state.updatedAt || 0)) {
+      clearTimeout(retryTimer); retryTimer = null;
+    } else if (!remote || ru < (state.updatedAt || 0) || state.dirty) {
       await syncPush(remote ? remote.sha : null);
       markSynced();
+      clearTimeout(retryTimer); retryTimer = null;
     } else {
       setSyncIcon("idle");
     }
   } catch (e) {
     setSyncIcon("error");
+    if (state.dirty) {
+      toast("Pendiente subir a la nube: " + e.message);
+      scheduleRetry();
+    }
   }
   syncing = false;
 }
@@ -237,7 +327,14 @@ async function autoSync() {
 function scheduleAutoPush() {
   if (!syncConfigured()) return;
   clearTimeout(scheduleAutoPush._t);
-  scheduleAutoPush._t = setTimeout(autoSync, 15000);
+  scheduleAutoPush._t = setTimeout(autoSync, 4000);
+}
+
+function flushPendingPush() {
+  if (state.dirty && syncConfigured() && !syncing) {
+    clearTimeout(scheduleAutoPush._t);
+    autoSync();
+  }
 }
 
 function readSyncForm() {
@@ -1182,12 +1279,14 @@ function init() {
 
   if (syncConfigured()) {
     const cfg = loadSyncCfg();
-    if (!cfg.lastSync || cfg.lastSync < (state.updatedAt || 0)) setSyncIcon("pending");
+    if (state.dirty || !cfg.lastSync || cfg.lastSync < (state.updatedAt || 0)) setSyncIcon("pending");
     setTimeout(autoSync, 2000);
     setInterval(() => { if (!document.hidden) autoSync(); }, 5 * 60 * 1000);
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) autoSync();
+      else flushPendingPush();
     });
+    window.addEventListener("pagehide", flushPendingPush);
   }
 
   const dateInput = document.getElementById("dayDate");
