@@ -1258,8 +1258,18 @@ function renderExQuick() {
   });
 }
 
+function renderVersion() {
+  const el = document.getElementById("appVersion");
+  if (!el || !("caches" in window)) return;
+  caches.keys().then(keys => {
+    const v = keys.filter(k => k.startsWith("kilitos-")).sort().pop();
+    if (v) el.textContent = v.replace("kilitos-", "kilitos ");
+  });
+}
+
 function init() {
   load();
+  renderVersion();
 
   initSuggest();
   renderExQuick();

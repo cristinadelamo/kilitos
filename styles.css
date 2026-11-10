@@ -497,6 +497,13 @@ main { max-width: 680px; margin: 0 auto; padding: 14px 12px 40px; }
   min-width: 0;
 }
 
+.app-footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: .75rem;
+  padding: 14px 0 6px;
+}
+
 @media (max-width: 480px) {
   .food-add { grid-template-columns: 1fr 90px; }
   .food-add select { grid-column: 1 / -1; }
