@@ -998,6 +998,7 @@ function switchTab(name) {
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
   document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === name));
   if (name === "diario") renderDiario();
+  if (name === "plan") renderPlan();
   if (name === "historial") renderHistorial();
   if (name === "alimentos") renderFoods(document.getElementById("foodSearch").value);
   if (name === "perfil") renderPerfil();
@@ -1258,6 +1259,278 @@ function renderExQuick() {
   });
 }
 
+const SHOP_KEY = "kilitos-planShop";
+let shopWeek = 0;
+
+function planDate(i) {
+  return shiftDate(PLAN.start, i);
+}
+
+function planEnd() {
+  return shiftDate(PLAN.start, PLAN.totalDays - 1);
+}
+
+function planDayIndex(dateStr) {
+  if (dateStr < PLAN.start || dateStr > planEnd()) return -1;
+  const a = parseDate(PLAN.start);
+  const b = parseDate(dateStr);
+  return Math.round((b - a) / 86400000);
+}
+
+function capFirst(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function renderPlan() {
+  const today = todayStr();
+  const idx = planDayIndex(today);
+  const head = document.getElementById("planHead");
+  const bar = document.getElementById("planBar");
+  const datesEl = document.getElementById("planDates");
+  const box = document.getElementById("planDays");
+  box.innerHTML = "";
+
+  if (idx < 0 && today < PLAN.start) {
+    head.innerHTML = "El plan empieza el <b>" + fmtDateLong(PLAN.start) + "</b>";
+    bar.style.width = "0%";
+  } else if (idx < 0) {
+    head.innerHTML = "Plan terminado el <b>" + fmtDateLong(planEnd()) + "</b> 🎉";
+    bar.style.width = "100%";
+  } else {
+    head.innerHTML = "Día <b>" + (idx + 1) + " de " + PLAN.totalDays + "</b>" +
+      (idx === PLAN.totalDays - 1 ? " · ¡hoy toca consulta!" : "");
+    bar.style.width = Math.round(((idx + 1) / PLAN.totalDays) * 100) + "%";
+  }
+  datesEl.textContent = "Del " + fmtDateLong(PLAN.start) + " al " + fmtDateLong(planEnd()) + ". " + PLAN.revision + ".";
+
+  const meals = [
+    ["comida", "🍽️ Comida · 14:00"],
+    ["cena", "🌙 Cena · 20:00"]
+  ];
+
+  PLAN.menu.forEach((m, i) => {
+    const ds = planDate(i);
+    const card = document.createElement("div");
+    card.className = "plan-day" + (ds === today ? " today" : "") + (ds < today ? " past" : "");
+    const h = document.createElement("div");
+    h.className = "plan-day-h";
+    const t = document.createElement("b");
+    t.textContent = capFirst(fmtDateLong(ds));
+    const wk = document.createElement("span");
+    wk.className = "plan-wk";
+    wk.textContent = "Semana " + m.w + " · " + m.d + " del plan" + (ds === today ? " · HOY" : "");
+    h.append(t, wk);
+    card.appendChild(h);
+    meals.forEach(pair => {
+      const row = document.createElement("div");
+      row.className = "plan-meal";
+      const lbl = document.createElement("span");
+      lbl.className = "lbl";
+      lbl.textContent = pair[1];
+      const dish = document.createElement("span");
+      dish.className = "dish";
+      dish.textContent = m[pair[0]];
+      const add = document.createElement("button");
+      add.type = "button";
+      add.className = "plan-add";
+      add.textContent = "＋";
+      add.title = "Apuntar en el Diario";
+      add.setAttribute("aria-label", "Apuntar " + m[pair[0]] + " en el Diario");
+      add.addEventListener("click", () => apuntarDesdePlan(pair[0], m[pair[0]]));
+      row.append(lbl, dish, add);
+      card.appendChild(row);
+    });
+    box.appendChild(card);
+  });
+
+  const todayEl = box.querySelector(".plan-day.today");
+  if (todayEl) todayEl.scrollIntoView({ block: "center" });
+  renderCombos();
+  renderProteins();
+  renderVeggies();
+  renderShop();
+}
+
+function renderCombos() {
+  const combosBox = document.getElementById("planCombos");
+  combosBox.innerHTML = "";
+  const groups = [
+    ["desayuno", "☀️ Desayuno · 8:00"],
+    ["merienda", "🥜 Merienda · 17:00"]
+  ];
+  PLAN.combos.forEach(c => {
+    const block = document.createElement("div");
+    block.className = "plan-day combo";
+    const h = document.createElement("div");
+    h.className = "plan-day-h";
+    const t = document.createElement("b");
+    t.textContent = c.name;
+    h.appendChild(t);
+    block.appendChild(h);
+    groups.forEach(g => {
+      const items = c[g[0]] || [];
+      if (!items.length) return;
+      const sub = document.createElement("div");
+      sub.className = "combo-sub";
+      sub.textContent = g[1];
+      block.appendChild(sub);
+      items.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "plan-meal";
+        const dish = document.createElement("span");
+        dish.className = "dish";
+        dish.textContent = item;
+        const add = document.createElement("button");
+        add.type = "button";
+        add.className = "plan-add";
+        add.textContent = "＋";
+        add.title = "Apuntar en el Diario";
+        add.setAttribute("aria-label", "Apuntar " + item + " en el Diario");
+        add.addEventListener("click", () => apuntarDesdePlan(g[0], item));
+        row.append(dish, add);
+        block.appendChild(row);
+      });
+    });
+    combosBox.appendChild(block);
+  });
+  document.getElementById("comboNote").textContent = PLAN.comboNote || "";
+}
+
+function renderProteins() {
+  const box = document.getElementById("planProteins");
+  box.innerHTML = "";
+  const block = document.createElement("div");
+  block.className = "plan-day combo";
+  PLAN.proteins.forEach(p => {
+    const row = document.createElement("div");
+    row.className = "plan-meal";
+    const dish = document.createElement("span");
+    dish.className = "dish";
+    dish.textContent = p.n;
+    if (p.note) {
+      const small = document.createElement("small");
+      small.textContent = p.note;
+      dish.appendChild(small);
+    }
+    const tag = document.createElement("span");
+    tag.className = "prot-tag" + (p.tag === "Alternativa" ? " alt" : "");
+    tag.textContent = p.tag.toLowerCase();
+    const add = document.createElement("button");
+    add.type = "button";
+    add.className = "plan-add";
+    add.textContent = "＋";
+    add.title = "Apuntar en el Diario";
+    add.setAttribute("aria-label", "Apuntar " + p.n + " en el Diario");
+    add.addEventListener("click", () => apuntarDesdePlan("comida", p.n));
+    row.append(dish, tag, add);
+    block.appendChild(row);
+  });
+  box.appendChild(block);
+}
+
+function renderVeggies() {
+  const box = document.getElementById("planVeggies");
+  box.innerHTML = "";
+  const block = document.createElement("div");
+  block.className = "plan-day combo";
+  PLAN.veggies.forEach(v => {
+    const row = document.createElement("div");
+    row.className = "plan-meal";
+    const dish = document.createElement("span");
+    dish.className = "dish";
+    dish.textContent = v.n;
+    if (v.note) {
+      const small = document.createElement("small");
+      small.textContent = v.note;
+      dish.appendChild(small);
+    }
+    const add = document.createElement("button");
+    add.type = "button";
+    add.className = "plan-add";
+    add.textContent = "＋";
+    add.title = "Apuntar como cena en el Diario";
+    add.setAttribute("aria-label", "Apuntar " + v.n + " en el Diario");
+    add.addEventListener("click", () => apuntarDesdePlan("cena", v.n));
+    row.append(dish, add);
+    block.appendChild(row);
+  });
+  box.appendChild(block);
+}
+
+function apuntarDesdePlan(type, dish) {
+  switchTab("diario");
+  document.getElementById("mealType").value = type;
+  document.getElementById("mealFood").value = dish;
+  const cal = document.getElementById("mealCal");
+  const known = findEffFood(dish);
+  cal.value = known ? known.k : "";
+  document.getElementById("mealQty").value = "";
+  updateMealPreview();
+  cal.focus();
+  cal.select();
+}
+
+function loadShop() {
+  try {
+    const o = JSON.parse(localStorage.getItem(SHOP_KEY));
+    return o && typeof o === "object" ? o : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveShop(o) {
+  localStorage.setItem(SHOP_KEY, JSON.stringify(o));
+}
+
+function shopMarked(w, gi, ii) {
+  const o = loadShop();
+  return !!(o[w] && o[w][gi + ":" + ii]);
+}
+
+function toggleShopMark(w, gi, ii) {
+  const o = loadShop();
+  o[w] = o[w] || {};
+  const key = gi + ":" + ii;
+  if (o[w][key]) delete o[w][key];
+  else o[w][key] = 1;
+  saveShop(o);
+}
+
+function renderShop() {
+  const b1 = document.getElementById("shopW1");
+  const b2 = document.getElementById("shopW2");
+  b1.classList.toggle("primary", shopWeek === 0);
+  b2.classList.toggle("primary", shopWeek === 1);
+  const box = document.getElementById("shopList");
+  box.innerHTML = "";
+  const list = PLAN.shop[shopWeek];
+  const h2 = document.createElement("p");
+  h2.className = "hint";
+  h2.textContent = list.name;
+  box.appendChild(h2);
+  list.groups.forEach((g, gi) => {
+    const h = document.createElement("h4");
+    h.textContent = g.g;
+    box.appendChild(h);
+    g.items.forEach((item, ii) => {
+      const lab = document.createElement("label");
+      lab.className = "shop-item" + (shopMarked(shopWeek, gi, ii) ? " done" : "");
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = shopMarked(shopWeek, gi, ii);
+      cb.addEventListener("change", () => {
+        toggleShopMark(shopWeek, gi, ii);
+        lab.classList.toggle("done", cb.checked);
+      });
+      const sp = document.createElement("span");
+      sp.textContent = item;
+      lab.append(cb, sp);
+      box.appendChild(lab);
+    });
+  });
+}
+
 function renderVersion() {
   const el = document.getElementById("appVersion");
   if (!el || !("caches" in window)) return;
@@ -1387,6 +1660,17 @@ function init() {
 
   ["exName", "exCal", "exQty"].forEach(id =>
     document.getElementById(id).addEventListener("input", updateExPreview));
+
+  shopWeek = todayStr() >= planDate(7) ? 1 : 0;
+  document.getElementById("shopW1").addEventListener("click", () => { shopWeek = 0; renderShop(); });
+  document.getElementById("shopW2").addEventListener("click", () => { shopWeek = 1; renderShop(); });
+  document.getElementById("shopReset").addEventListener("click", () => {
+    const o = loadShop();
+    delete o[shopWeek];
+    saveShop(o);
+    renderShop();
+    toast("Lista desmarcada");
+  });
 
   document.getElementById("exForm").addEventListener("submit", e => {
     e.preventDefault();

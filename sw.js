@@ -1,5 +1,5 @@
-const CACHE = "kilitos-v41";
-const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./foods.js", "./manifest.json", "./icons/icon-192.png", "./icons/icon-512.png"];
+const CACHE = "kilitos-v45";
+const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./foods.js", "./plan.js", "./manifest.json", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));

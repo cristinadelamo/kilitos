@@ -21,6 +21,7 @@
     </div>
     <nav class="tabs">
       <button class="tab active" data-tab="diario">Diario</button>
+      <button class="tab" data-tab="plan">Plan</button>
       <button class="tab" data-tab="historial">Historial</button>
       <button class="tab" data-tab="alimentos">Alimentos</button>
       <button class="tab" data-tab="habitos">Hábitos</button>
@@ -115,6 +116,64 @@
     </div>
   </section>
 
+  <section id="plan" class="panel">
+    <div class="card">
+      <h2>🥗 Plan del nutricionista</h2>
+      <p id="planHead" class="plan-head"></p>
+      <div class="plan-progress"><i id="planBar"></i></div>
+      <p id="planDates" class="hint"></p>
+    </div>
+
+    <div class="card">
+      <h2>☕️ Desayuno y merienda</h2>
+      <p class="hint">Tus dos combinaciones fijas: alterna A y B como prefieras.</p>
+      <div id="planCombos"></div>
+      <p id="comboNote" class="hint"></p>
+    </div>
+
+    <div class="card">
+      <h2>🥩 Mis proteínas para comer</h2>
+      <p class="hint">Tu rotación para no complicarte: los de «mantener» son tus fijos y los de «alternativa» te sacan de un apuro.</p>
+      <div id="planProteins"></div>
+    </div>
+
+    <div class="card">
+      <h2>🥬 Mis verduras para cenar</h2>
+      <p class="hint">Tu rotación de verduras, siempre con la proteína que toque. Recetas y sesión de cocina, en Hábitos.</p>
+      <div id="planVeggies"></div>
+    </div>
+
+    <div class="card">
+      <h2>🍽️ Comidas y cenas · 14 días</h2>
+      <p class="hint">Pulsa ＋ para llevar un plato al Diario y apuntar sus kcal. La primera vez que apuntas un plato, se guarda solo en Alimentos.</p>
+      <div id="planDays"></div>
+    </div>
+
+    <div class="card">
+      <h2>📌 Las 7 reglas del plan</h2>
+      <div class="rule-list">
+        <div class="rule-row">🍽️ Cuatro comidas al día</div>
+        <div class="rule-row">🕗 Respetar los horarios y las 12 horas de ayuno nocturno</div>
+        <div class="rule-row">🥩 Proteína y verdura en comida y cena</div>
+        <div class="rule-row">🥬 Verduras sin límite</div>
+        <div class="rule-row">🫒 Máximo 3 cucharadas de aceite al día</div>
+        <div class="rule-row">🚫 Sin harinas ni azúcar</div>
+        <div class="rule-row">🥔 Patata, máximo una vez por semana</div>
+      </div>
+      <p class="hint">Horarios: desayuno 8:00 · comida 14:00 · merienda 17:00 · cena 20:00</p>
+    </div>
+
+    <div class="card">
+      <h2>🛒 Lista de la compra</h2>
+      <div class="shop-tabs">
+        <button type="button" id="shopW1" class="btn small">Semana 1</button>
+        <button type="button" id="shopW2" class="btn small">Semana 2</button>
+        <button type="button" id="shopReset" class="btn small danger">Desmarcar</button>
+      </div>
+      <div id="shopList"></div>
+    </div>
+  </section>
+
   <section id="historial" class="panel">
     <div class="card">
       <h2>📉 Evolución del peso</h2>
@@ -144,38 +203,126 @@
 
   <section id="habitos" class="panel">
     <div class="card">
-      <h2>🌱 Tips anti-hinchazón</h2>
-      <p class="hint">Para releer cuando quieras. La constancia importa más que la intensidad.</p>
+      <h2>🕒 El plan a golpe de vista</h2>
+      <p class="hint">Pautas de estas dos semanas, del 14 al 27 de noviembre. Verás el menú de cada día en la pestaña Plan.</p>
       <div class="tip-group">
-        <h3>☀️ Mañana (en ayunas)</h3>
-        <div class="tip-row"><span class="tip-txt"><b>Vaso de agua tibia al levantarte</b><small>Activa el tránsito intestinal tras el ayuno nocturno</small></span></div>
-        <div class="tip-row"><span class="tip-txt"><b>Infusión antiinflamatoria en ayunas</b><small>Jengibre, cúrcuma y canela con una pizca de pimienta: apenas aporta kcal y no rompe el ayuno</small></span></div>
-        <div class="tip-row"><span class="tip-txt"><b>Paseo suave de 10-20 minutos en ayunas</b><small>Mueve el intestino y quema grasa sin abrir el apetito</small></span></div>
-        <div class="tip-row"><span class="tip-txt"><b>Pesarte siempre igual</b><small>En ayunas y tras ir al baño, para que la comparación sea fiable</small></span></div>
+        <h3>🕗 Horarios</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Desayuno 8:00 · Comida 14:00 · Merienda 17:00 · Cena 20:00</b><small>Cuatro comidas al día, siempre a las mismas horas</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>12 horas de ayuno nocturno</b><small>De la cena (20:00) al desayuno del día siguiente (8:00). El café solo y las infusiones sin azúcar no rompen el ayuno</small></span></div>
       </div>
       <div class="tip-group">
-        <h3>🍽️ Al romper el ayuno</h3>
-        <div class="tip-row"><span class="tip-txt"><b>Romper el ayuno comiendo despacio</b><small>Mínimo 20 minutos, masticando bien: comer rápido hincha aunque no llegues con hambre</small></span></div>
-        <div class="tip-row"><span class="tip-txt"><b>Empezar por verdura cocida y proteína</b><small>Pavo, huevo o pescado: protege el músculo, que en postmenopausia se pierde más rápido</small></span></div>
-        <div class="tip-row"><span class="tip-txt"><b>Poca sal y cero ultraprocesados</b><small>El sodio retiene líquidos; sazona con orégano, pimentón y limón</small></span></div>
-        <div class="tip-row"><span class="tip-txt"><b>Paseo de 10 minutos tras la comida</b><small>Activa la digestión y evita la pesadez y los gases</small></span></div>
+        <h3>🍽️ Comida y cena</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Proteína + verdura</b><small>La estructura de las dos comidas principales, tal y como marca el menú</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Verduras sin límite</b><small>Ensaladas, calabacín, espinacas, champiñones, berenjenas...</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Aceite de oliva: máximo 3 cucharadas al día</b><small>Cuenta tanto las de cocinar como las de aliñar</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Patata: máximo una vez por semana</b><small>El resto de alimentos ricos en almidón, fuera estas dos semanas</small></span></div>
       </div>
       <div class="tip-group">
-        <h3>🌙 Tarde y noche</h3>
-        <div class="tip-row"><span class="tip-txt"><b>Última infusión antes de las 18:00</b><small>El jengibre y la pimienta estimulan y pueden dificultar el sueño</small></span></div>
-        <div class="tip-row"><span class="tip-txt"><b>Cena ligera y temprana</b><small>2-3 horas antes de acostarte: es la que abre tu ventana de ayuno</small></span></div>
-      </div>
-      <div class="tip-group">
-        <h3>🔁 Todo el día</h3>
-        <div class="tip-row"><span class="tip-txt"><b>Fuerza 2 días por semana</b><small>Sentadillas, pesas o bandas elásticas: el músculo es lo que más calorías quema en reposo y lo primero que se pierde en postmenopausia</small></span></div>
-        <div class="tip-row"><span class="tip-txt"><b>Levantarse 2-3 minutos cada hora</b><small>Estar mucho tiempo sentada ralentiza el tránsito y hincha el abdomen</small></span></div>
-        <div class="tip-row"><span class="tip-txt"><b>Los vasos de agua del Diario 💧</b><small>Paradójicamente, hidratarse bien reduce la retención de líquidos</small></span></div>
-        <div class="tip-row"><span class="tip-txt"><b>Dormir 7-8 horas</b><small>Dormir mal sube el cortisol, la hormona que favorece retención e hinchazón</small></span></div>
+        <h3>🚫 Sin harinas ni azúcar</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Pan, pasta, bollería, dulces y azúcar</b><small>Solo durante estas dos semanas; después el nutricionista irá incorporando más alimentos</small></span></div>
       </div>
     </div>
+
+    <div class="card">
+      <h2>🔁 Intercambios y cantidades</h2>
+      <div class="tip-group">
+        <h3>Puedes alternar libremente</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Pescado blanco</b><small>Merluza, rape, dorada, bacalao, lubina, sepia, rodaballo...</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Pescado azul</b><small>Salmón, sardinas, caballa, atún, bonito, anchoas</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Carne blanca</b><small>Pollo, pavo, conejo y lomo de cerdo</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Carne roja</b><small>Ternera, cordero, cerdo, pato, ganso y buey</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Marisco</b><small>Gambas, langostinos, pulpo, camarón y langosta</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Frutos secos</b><small>Nueces, avellanas, almendras, pistachos y anacardos</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Legumbres</b><small>Judías, guisantes, lentejas, soja, alubias, garbanzos y habas (en la hoja también aparecen los cacahuetes)</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Quesos</b><small>Mozzarella, manchego, parmesano, oveja, feta, burrata, cabra y Burgos</small></span></div>
+      </div>
+      <div class="tip-group">
+        <h3>Cantidades orientativas de la hoja</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Carne 300 g · Pescado 300 g · Queso 70 g</b><small>Las cantidades principales del plan</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Pechuga de pavo 40 g · Frutos secos pelados 40 g · Yogur natural entero 1 unidad</b><small>Para desayunos y meriendas</small></span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>☕️ Desayuno y merienda</h2>
+      <p class="hint">Tus combinaciones fijas para estas dos semanas. Alterna A y B como prefieras.</p>
+      <div class="tip-group">
+        <h3>Opción A</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Desayuno · 8:00</b><small>Café solo · Tortilla de 1-2 huevos · Pavo · Nueces</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Merienda · 17:00</b><small>Yogur griego natural entero · Colágeno</small></span></div>
+      </div>
+      <div class="tip-group">
+        <h3>Opción B</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Desayuno · 8:00</b><small>Café solo · Yogur griego natural entero · Jamón serrano · Nueces</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Merienda · 17:00</b><small>Queso de Burgos</small></span></div>
+      </div>
+      <div class="tip-group">
+        <h3>Variación opcional</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Aguacate en el desayuno A</b><small>Algunos días, sustituye las nueces por aguacate: así aprovechas las dos fuentes de grasas saludables del plan</small></span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🥬 Las 4 preparaciones de verdura</h2>
+      <div class="tip-group">
+        <h3>1 · Bandeja de verduras al horno (la estrella)</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Berenjena, calabacín, pimiento y cebolla</b><small>Semana 1: 260 g de berenjena · 90 g de calabacín · 290 g de pimiento · 330 g de cebolla; añade las de la semana 2 cuando toque</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Horno 200 °C, 30-40 min</b><small>Trozos medianos, cebolla en gajos, AOVE y sal; remueve a mitad de cocción. No hace falta que queden perfectas</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Conservación</b><small>Nevera 3-4 días en recipiente hermético; congela porciones si haces más cantidad</small></span></div>
+      </div>
+      <div class="tip-group">
+        <h3>2 · Cremas de verduras (dos tipos)</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Crema 1: calabaza, zanahoria y puerro</b><small>240 g + 160 g + 50 g · cuece 20-25 min cubiertas con agua y tritura con un chorrito de AOVE y sal</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Crema 2: calabacín</b><small>Parte de los 600 g de la semana 2 + puerro · cuece 15-20 min y tritura. Sin nata ni quesitos</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Truco</b><small>Haz varias raciones y congela en recipientes individuales: cenas preparadas para otro día</small></span></div>
+      </div>
+      <div class="tip-group">
+        <h3>3 · Ensaladas de bolsa con tomate (días de pereza)</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Bolsas de lechuga, canónigos o rúcula + tomate</b><small>Ya en tus listas: S1 490 g de tomate y 50 g de rúcula · S2 700 g de tomate, 80 g de cherry, 170 g de cogollos y 50 g de lechuga</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Abrir bolsa, añadir tomate y aliñar</b><small>AOVE, sal y vinagre o limón; lista en dos minutos. Alterna hojas sin cambiar nada más</small></span></div>
+      </div>
+      <div class="tip-group">
+        <h3>4 · Champiñones o calabacín a la sartén</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Champiñones</b><small>Laminados (120 g en S2) y setas (100 g en S1, 70 g en S2) · saltea 7-10 min con AOVE, ajo y perejil; sal al final</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Calabacín</b><small>El asignado de cada semana · rodajas 3-4 min por lado con AOVE, sal y pimienta; también en dados al wok</small></span></div>
+      </div>
+      <p class="hint">Filosofía: verduras asadas y cremas → abrir y calentar · ensalada → abrir bolsa y cortar tomate · sartén → 10 minutos. Ni una receta distinta cada día.</p>
+    </div>
+
+    <div class="card">
+      <h2>🧑‍🍳 Sesión de cocina (50-60 min)</h2>
+      <p class="hint">Dos sesiones por semana (p. ej. domingo y miércoles): no cocines las dos semanas de golpe.</p>
+      <div class="tip-group">
+        <h3>El orden</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Minutos 0-10 · Preparar verduras</b><small>Lavar, pelar y cortar las verduras de la bandeja y de las cremas</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Minutos 10-20 · Horno y cazuela</b><small>La bandeja al horno y la primera crema al fuego</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Minutos 20-40 · Segunda crema</b><small>Prepárala mientras se hornean las verduras</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Minutos 40-50 · Triturar y guardar</b><small>Cremas en recipientes individuales; verduras asadas a la nevera</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Minutos 50-60 · Organizar</b><small>Bolsas de ensalada y champiñones listos para los próximos días</small></span></div>
+      </div>
+      <div class="tip-group">
+        <h3>Cómo guardar</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Verduras asadas, cremas, champiñones y calabacín cocinados</b><small>Nevera 3-4 días · todos congelables en porciones</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Ensalada lavada</b><small>Sigue la fecha del envase; no se congela</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Recipientes poco profundos</b><small>Refrigera pronto, sin dejar las preparaciones horas a temperatura ambiente</small></span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>💪 Ejercicio, sol y descanso</h2>
+      <div class="tip-group">
+        <h3>Lo que pide el plan</h3>
+        <div class="tip-row"><span class="tip-txt"><b>Ejercicio regular</b><small>La hoja lo recomienda expresamente; si puedes, fuerza 2 días por semana (sentadillas, pesas, bandas): el músculo es lo que más calorías quema en reposo</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Exposición al sol</b><small>La pauta del plan por la vitamina D; un paseo al aire libre suma</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Dormir 7-8 horas</b><small>Dormir mal sube el cortisol, la hormona que favorece retención e hinchazón</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Los vasos de agua del Diario 💧</b><small>Hidratarse bien reduce la retención de líquidos; el vaso de agua tibia al levantarse ayuda además al tránsito</small></span></div>
+        <div class="tip-row"><span class="tip-txt"><b>Pesarte siempre igual</b><small>En ayunas y tras ir al baño, para que la comparación sea fiable</small></span></div>
+      </div>
+    </div>
+
     <div class="card">
       <h2>💡 Nota</h2>
-      <p class="hint">Si la báscula no se mueve: en postmenopausia el gasto calórico baja sobre todo por la pérdida de músculo. La proteína en la comida y la cena, más el ejercicio de fuerza, son tu mejor palanca; recortar más comida puede salir al revés. ⚠️ Con atorvastatina: la cúrcuma diaria de la infusión puede elevar sus niveles (bajo riesgo con 1 cdta, coméntalo con tu médico) y evita el pomelo. Pauta actual: estatina en la comida, magnesio bisglicinato (3 cápsulas = 240 mg) antes de dormir. Si la hinchazón es persistente o dolorosa, merece revisión médica.</p>
+      <p class="hint">Consulta de revisión: <b>viernes 27 de noviembre</b>; a partir de ahí se irán incorporando más alimentos. ❓ Pendiente de confirmar con el nutricionista: los 300 g de carne y pescado, ¿son por comida o al día? ⚠️ Con atorvastatina: la cúrcuma diaria puede elevar sus niveles (bajo riesgo, coméntalo con tu médico) y evita el pomelo. Pauta actual: estatina (el botón 💊 del Diario) y magnesio bisglicinato (3 cápsulas = 240 mg) antes de dormir. Si la hinchazón es persistente o dolorosa, merece revisión médica.</p>
     </div>
   </section>
 
@@ -251,6 +398,7 @@
 <footer id="appVersion" class="app-footer"></footer>
 <div id="toast" class="toast" role="status"></div>
 <script src="foods.js"></script>
+<script src="plan.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
