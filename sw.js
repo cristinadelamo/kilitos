@@ -1,4 +1,4 @@
-const CACHE = "kilitos-v45";
+const CACHE = "kilitos-v46";
 const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./foods.js", "./plan.js", "./manifest.json", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", e => {
